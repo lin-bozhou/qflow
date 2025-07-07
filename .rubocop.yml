@@ -1,0 +1,39 @@
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.1
+
+Lint/EmptyClass:
+  Enabled: false
+Layout/EndOfLine:
+  Enabled: false
+Layout/LineLength:
+  Enabled: true
+Lint/MissingSuper:
+  Enabled: false
+Lint/ScriptPermission:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+Naming/MethodParameterName:
+  MinNameLength: 2
+Naming/PredicateMethod:
+  Enabled: false
+Style/ClassAndModuleChildren:
+  EnforcedStyle: compact
+Style/Documentation:
+  Enabled: false
+Style/FormatStringToken:
+  Enabled: false
+Style/HashSyntax:
+  EnforcedShorthandSyntax: consistent

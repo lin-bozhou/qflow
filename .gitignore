@@ -1,0 +1,10 @@
+# Local
+.bundle
+.DS_Store
+
+# Dist
+*.gem
+
+# IDE
+.idea
+.vscode
