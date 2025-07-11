@@ -37,9 +37,9 @@ class QFlow::Rule
     raise ArgumentError, 'Error: question code cannot be empty' if question_code.to_s.empty?
     raise ArgumentError, 'Error: block is required for question definition' unless block_given?
 
-    code_sym = question_code.to_sym
-    @rules[code_sym] = Builder.new(code_sym, &).build
-    @question_codes << code_sym unless @question_codes.include?(code_sym)
+    code = question_code.to_sym
+    @rules[code] = Builder.new(code, &).build
+    @question_codes << code unless @question_codes.include?(code)
   end
 
   # @param values [Array<String, Symbol, nil>]

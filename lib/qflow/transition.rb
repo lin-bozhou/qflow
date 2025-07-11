@@ -31,20 +31,20 @@ class QFlow::Transition
       raise ArgumentError, "Error: question '#{@current_question}' has defined a target but it is empty"
     end
 
-    code_sym = question_code.to_sym
+    code = question_code.to_sym
 
-    if code_sym == @current_question
+    if code == @current_question
       raise ArgumentError,
             "Error: question '#{@current_question}' cannot target itself"
     end
 
-    unless @allowed_targets.empty? || @allowed_targets.include?(code_sym)
+    unless @allowed_targets.empty? || @allowed_targets.include?(code)
       raise QFlow::UsageError,
-            "Error: question '#{@current_question}' target '#{code_sym}' is not in defined targets: " \
+            "Error: question '#{@current_question}' target '#{code}' is not in defined targets: " \
             "#{@allowed_targets}"
     end
 
-    @target = code_sym
+    @target = code
   end
 
   %w[effects deps args targets].each do |method_name|
