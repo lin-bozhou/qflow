@@ -16,6 +16,7 @@ class QFlow::Rule
     new(initial_questions).tap do |rule|
       rule.instance_eval(&) if block_given?
       rule.send(:validate_targets!)
+      rule.send(:validate_deps!)
     end
   end
 
@@ -64,6 +65,17 @@ class QFlow::Rule
 
     raise QFlow::DefinitionError,
           "Error: targets #{invalid_targets.inspect} are not defined in question codes #{@question_codes.inspect}"
+  end
+
+  def validate_deps!
+    all_effects = @rules.values.flat_map { _1[:effects] }.uniq
+    all_deps = @rules.values.flat_map { _1[:deps] }.uniq
+    invalid_deps = all_deps - all_effects
+
+    return if invalid_deps.empty?
+
+    raise QFlow::DefinitionError,
+          "Error: deps #{invalid_deps.inspect} are not defined in effects #{all_effects}"
   end
 
   class Builder

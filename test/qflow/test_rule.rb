@@ -5,6 +5,10 @@ require_relative '../test_helper'
 class TestRule < Minitest::Test
   def test_define_simple_question
     rule = QFlow.define(%w[q1 q2 q3 q4]) do
+      question :q2 do
+        effects :flag3, :flag4
+      end
+
       question :q1 do
         effects :flag1, :flag2
         deps :flag3, :flag4
@@ -34,6 +38,10 @@ class TestRule < Minitest::Test
 
   def test_question_has_transitions_but_no_predefined_answers
     rule = QFlow.define(%w[q1 q2 q3]) do
+      question :q2 do
+        effects :flag2
+      end
+
       question :q1 do
         effects :flag1
         deps :flag2
@@ -101,7 +109,7 @@ class TestRule < Minitest::Test
 
       question :q4 do
         effects :flag4
-        deps :flag5
+        deps :flag3
       end
 
       question :q5 do
@@ -136,7 +144,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q4]
     refute_nil config
     assert_equal [:flag4], config[:effects]
-    assert_equal [:flag5], config[:deps]
+    assert_equal [:flag3], config[:deps]
     assert_equal [], config[:args]
     assert_equal [], config[:targets]
     assert_nil config[:transitions_block]
@@ -453,6 +461,10 @@ class TestRule < Minitest::Test
 
   def test_params_and_targets_functions
     rule = QFlow.define(%w[q1 q2 q3 q4]) do
+      question :q2 do
+        effects :flag2
+      end
+
       question :q1 do
         args :a1, :a2
         targets :q2, :q3, :q4
@@ -567,6 +579,10 @@ class TestRule < Minitest::Test
 
   def test_deps_and_effects_no_overlap_should_succeed
     rule = QFlow.define(%w[q1 q2]) do
+      question :q2 do
+        effects :flag3, :flag4
+      end
+
       question :q1 do
         args :a1
         effects :flag1, :flag2
@@ -582,5 +598,45 @@ class TestRule < Minitest::Test
     refute_nil config
     assert_equal %i[flag1 flag2], config[:effects]
     assert_equal %i[flag3 flag4], config[:deps]
+  end
+
+  def test_deps_not_defined_in_effects_should_fail
+    error = assert_raises QFlow::DefinitionError do
+      QFlow.define(%w[q1 q2]) do
+        question :q1 do
+          args :a1
+          effects :flag1
+          deps :undefined_flag # not defined in any effects
+          targets :q2
+          transitions do
+            target :q2
+          end
+        end
+      end
+    end
+    assert_match(/Error: deps \[:undefined_flag\] are not defined in effects/, error.message)
+  end
+
+  def test_deps_all_defined_in_effects_should_succeed
+    rule = QFlow.define(%w[q1 q2 q3]) do
+      question :q2 do
+        effects :flag2, :flag3
+      end
+
+      question :q1 do
+        args :a1
+        effects :flag1
+        deps :flag2, :flag3 # both defined in q2's effects
+        targets :q2
+        transitions do
+          target :q2
+        end
+      end
+    end
+
+    config = rule.configs[:q1]
+    refute_nil config
+    assert_equal [:flag1], config[:effects]
+    assert_equal %i[flag2 flag3], config[:deps]
   end
 end
