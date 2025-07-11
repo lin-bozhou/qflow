@@ -7,6 +7,7 @@ QFlow is a Ruby DSL for defining questionnaire flow logic with conditional trans
 - **Zero Dependencies**: No external runtime dependencies
 - **Declarative**: Define flow logic using a clean, readable DSL
 - **Immutable**: Only performs calculations without modifying external state or variables
+- **Robust Validation**: Comprehensive error detection and validation with clear error messages
 
 ## Installation
 
