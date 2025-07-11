@@ -39,3 +39,18 @@ jobs:
 
       - name: Run tests
         run: bundle exec rake test
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: mise.toml
+          bundler-cache: true
+
+      - name: Build gem
+        run: bundle exec gem build
