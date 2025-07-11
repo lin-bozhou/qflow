@@ -4,7 +4,7 @@ require_relative '../test_helper'
 
 class TestRule < Minitest::Test
   def test_define_simple_question
-    rule = QFlow.define do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         effects :e1, :e2
         deps :d1, :d2
@@ -29,11 +29,11 @@ class TestRule < Minitest::Test
     assert_equal %i[answer a1], config[:args]
     assert_equal %i[q2 q3 q4], config[:targets]
     refute_nil config[:transitions_block]
-    assert_equal [:q1], rule.codes
+    assert_equal %i[q1 q2 q3 q4], rule.codes
   end
 
   def test_question_has_transitions_but_no_predefined_answers
-    rule = QFlow.define do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         effects :e1
         deps :condition_dep
@@ -53,7 +53,7 @@ class TestRule < Minitest::Test
     assert_equal [:condition], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions_block]
-    assert_equal [:q1], rule.codes
+    assert_equal %i[q1 q2 q3], rule.codes
   end
 
   def test_empty_question_block
@@ -227,7 +227,7 @@ class TestRule < Minitest::Test
   end
 
   def test_question_has_args_but_missing_transitions
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           args :answer
@@ -240,7 +240,7 @@ class TestRule < Minitest::Test
   end
 
   def test_empty_question_code
-    error = assert_raises(ArgumentError) do
+    error = assert_raises ArgumentError do
       QFlow.define do
         question '' do
           args :answer
@@ -251,7 +251,7 @@ class TestRule < Minitest::Test
   end
 
   def test_target_in_question_block
-    error = assert_raises(QFlow::UsageError) do
+    error = assert_raises QFlow::UsageError do
       QFlow.define do
         question :q1 do
           target :q2
@@ -262,7 +262,7 @@ class TestRule < Minitest::Test
   end
 
   def test_transitions_without_block
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           args :answer
@@ -275,7 +275,7 @@ class TestRule < Minitest::Test
   end
 
   def test_transitions_without_block_with_args
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           effects :e1
@@ -289,7 +289,7 @@ class TestRule < Minitest::Test
   end
 
   def test_transitions_without_args
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           effects :e1
@@ -303,7 +303,7 @@ class TestRule < Minitest::Test
   end
 
   def test_transitions_without_targets
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           args :answer
@@ -447,7 +447,7 @@ class TestRule < Minitest::Test
   end
 
   def test_target_not_in_targets_raises_error
-    rule = QFlow.define do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         args :answer
         targets :q2, :q3
@@ -458,14 +458,14 @@ class TestRule < Minitest::Test
     end
 
     applier = QFlow.use(rule)
-    error = assert_raises(QFlow::UsageError) do
+    error = assert_raises QFlow::UsageError do
       applier.apply(:q1, answer: 'yes')
     end
     assert_match(/Error: question 'q1' target 'q4' is not in defined targets/, error.message)
   end
 
   def test_params_and_targets_functions
-    rule = QFlow.define do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         args :param1, :param2
         targets :q2, :q3, :q4
@@ -486,7 +486,7 @@ class TestRule < Minitest::Test
   end
 
   def test_params_without_transitions_should_fail
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           args :condition
@@ -497,7 +497,7 @@ class TestRule < Minitest::Test
   end
 
   def test_targets_without_transitions_should_fail
-    error = assert_raises(QFlow::DefinitionError) do
+    error = assert_raises QFlow::DefinitionError do
       QFlow.define do
         question :q1 do
           targets :q2, :q3
@@ -508,7 +508,7 @@ class TestRule < Minitest::Test
   end
 
   def test_params_with_transitions_should_succeed
-    rule = QFlow.define do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         args :condition
         targets :q2, :q3
@@ -526,7 +526,7 @@ class TestRule < Minitest::Test
   end
 
   def test_targets_with_transitions_should_succeed
-    rule = QFlow.define do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         args :answer
         targets :q2, :q3
@@ -544,11 +544,42 @@ class TestRule < Minitest::Test
   end
 
   def test_question_without_block
-    error = assert_raises(ArgumentError) do
+    error = assert_raises ArgumentError do
       QFlow.define do
         question :q1
       end
     end
     assert_equal 'Error: block is required for question definition', error.message
+  end
+
+  def test_targets_not_in_question_codes_should_fail
+    error = assert_raises QFlow::DefinitionError do
+      QFlow.define(%w[q1 q2]) do
+        question :q1 do
+          args :answer
+          targets :q2, :q3 # q3 not in question codes
+          transitions do
+            target :q2
+          end
+        end
+      end
+    end
+    assert_match(/Error: targets.*are not defined in question codes/, error.message)
+  end
+
+  def test_targets_all_in_question_codes_should_succeed
+    rule = QFlow.define(%w[q1 q2 q3]) do
+      question :q1 do
+        args :answer
+        targets :q2, :q3 # both in question codes
+        transitions do
+          target answer ? :q2 : :q3
+        end
+      end
+    end
+
+    config = rule.configs[:q1]
+    refute_nil config
+    assert_equal %i[q2 q3], config[:targets]
   end
 end
