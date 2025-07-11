@@ -111,6 +111,6 @@ class QFlow::Engine
 
     return [] if next_idx.nil? || lastest_idx.nil? || next_idx > lastest_idx
 
-    codes[next_idx..lastest_idx].map(&:to_s)
+    codes[next_idx...lastest_idx].map(&:to_s)
   end
 end
