@@ -167,6 +167,7 @@ class TestRule < Minitest::Test
     refute_empty rule.configs
     rule.clear!
     assert_empty rule.configs
+    assert_empty rule.codes
   end
 
   def test_empty_rule
