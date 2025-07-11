@@ -87,15 +87,15 @@ class QFlow::Engine
   # @param targets [Array<Symbol>]
   # @return [Array<String>]
   def calc_recover_questions(next_question, skip_questions, effects, targets)
+    range_recover = calc_range_recover(next_question, targets)
     dep_recover = []
     effects.each do |effect|
       affected_questions = @effect_mapping[effect]
       dep_recover.concat(affected_questions) if affected_questions
     end
     dep_recover = dep_recover.uniq.map(&:to_s)
-    range_recover = calc_range_recover(next_question, targets)
 
-    all_recover = (dep_recover + range_recover).uniq
+    all_recover = (range_recover + dep_recover).uniq
     all_recover - skip_questions
   end
 
