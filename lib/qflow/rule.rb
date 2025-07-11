@@ -57,7 +57,7 @@ class QFlow::Rule
   private
 
   def validate_targets!
-    all_targets = @rules.values.flat_map { |config| config[:targets] }.uniq
+    all_targets = @rules.values.flat_map { _1[:targets] }.uniq
     invalid_targets = all_targets - @question_codes
 
     return if invalid_targets.empty?
