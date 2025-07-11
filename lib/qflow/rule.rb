@@ -153,10 +153,16 @@ class QFlow::Rule
       end
 
       # if targets are defined, they must not include the current question
-      return unless @targets.include?(@current_question)
+      if @targets.include?(@current_question)
+        raise QFlow::DefinitionError,
+              "Error: question '#{@current_question}' cannot target itself in its own targets list"
+      end
+
+      # deps must not overlap with effects
+      return unless @deps.intersect?(@effects)
 
       raise QFlow::DefinitionError,
-            "Error: question '#{@current_question}' cannot target itself in its own targets list"
+            "Error: question '#{@current_question}' has deps that overlap with its effects: #{@deps & @effects}"
     end
   end
 end

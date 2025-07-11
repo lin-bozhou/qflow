@@ -7,7 +7,7 @@ class TestRule < Minitest::Test
     rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         effects :flag1, :flag2
-        deps :flag1, :flag2
+        deps :flag3, :flag4
         args :a1, :a2
         targets :q2, :q3, :q4
 
@@ -25,7 +25,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q1]
     refute_nil config
     assert_equal %i[flag1 flag2], config[:effects]
-    assert_equal %i[flag1 flag2], config[:deps]
+    assert_equal %i[flag3 flag4], config[:deps]
     assert_equal %i[a1 a2], config[:args]
     assert_equal %i[q2 q3 q4], config[:targets]
     refute_nil config[:transitions_block]
@@ -36,7 +36,7 @@ class TestRule < Minitest::Test
     rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         effects :flag1
-        deps :flag1
+        deps :flag2
         args :a1
         targets :q2, :q3
 
@@ -49,7 +49,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q1]
     refute_nil config
     assert_equal [:flag1], config[:effects]
-    assert_equal [:flag1], config[:deps]
+    assert_equal [:flag2], config[:deps]
     assert_equal [:a1], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions_block]
@@ -77,7 +77,7 @@ class TestRule < Minitest::Test
     rule = QFlow.define do
       question :q1 do
         effects :flag1, :flag2
-        deps :flag1, :flag2
+        deps :flag3, :flag4
         args :a1, :a2
         targets :q2, :q3
 
@@ -101,7 +101,7 @@ class TestRule < Minitest::Test
 
       question :q4 do
         effects :flag4
-        deps :flag4
+        deps :flag5
       end
 
       question :q5 do
@@ -112,7 +112,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q1]
     refute_nil config
     assert_equal %i[flag1 flag2], config[:effects]
-    assert_equal %i[flag1 flag2], config[:deps]
+    assert_equal %i[flag3 flag4], config[:deps]
     assert_equal %i[a1 a2], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions_block]
@@ -136,7 +136,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q4]
     refute_nil config
     assert_equal [:flag4], config[:effects]
-    assert_equal [:flag4], config[:deps]
+    assert_equal [:flag5], config[:deps]
     assert_equal [], config[:args]
     assert_equal [], config[:targets]
     assert_nil config[:transitions_block]
@@ -457,7 +457,7 @@ class TestRule < Minitest::Test
         args :a1, :a2
         targets :q2, :q3, :q4
         effects :flag1
-        deps :flag1
+        deps :flag2
         transitions do
           target a1 > a2 ? :q2 : :q3
         end
@@ -469,7 +469,7 @@ class TestRule < Minitest::Test
     assert_equal %i[a1 a2], config[:args]
     assert_equal %i[q2 q3 q4], config[:targets]
     assert_equal [:flag1], config[:effects]
-    assert_equal [:flag1], config[:deps]
+    assert_equal [:flag2], config[:deps]
   end
 
   def test_params_with_transitions_should_succeed
@@ -546,5 +546,41 @@ class TestRule < Minitest::Test
     config = rule.configs[:q1]
     refute_nil config
     assert_equal %i[q2 q3], config[:targets]
+  end
+
+  def test_deps_and_effects_overlap_should_fail
+    error = assert_raises QFlow::DefinitionError do
+      QFlow.define(%w[q1 q2]) do
+        question :q1 do
+          args :a1
+          effects :flag1, :flag2
+          deps :flag1, :flag3 # flag1 overlaps with effects
+          targets :q2
+          transitions do
+            target :q2
+          end
+        end
+      end
+    end
+    assert_match(/Error: question 'q1' has deps that overlap with its effects: \[:flag1\]/, error.message)
+  end
+
+  def test_deps_and_effects_no_overlap_should_succeed
+    rule = QFlow.define(%w[q1 q2]) do
+      question :q1 do
+        args :a1
+        effects :flag1, :flag2
+        deps :flag3, :flag4 # no overlap with effects
+        targets :q2
+        transitions do
+          target :q2
+        end
+      end
+    end
+
+    config = rule.configs[:q1]
+    refute_nil config
+    assert_equal %i[flag1 flag2], config[:effects]
+    assert_equal %i[flag3 flag4], config[:deps]
   end
 end
