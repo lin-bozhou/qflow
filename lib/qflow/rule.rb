@@ -13,7 +13,10 @@ class QFlow::Rule
   # @param &block [Proc]
   # @return [QFlow::Rule]
   def self.define(initial_questions = [], &)
-    new(initial_questions).tap { _1.instance_eval(&) if block_given? }
+    new(initial_questions).tap do |rule|
+      rule.instance_eval(&) if block_given?
+      rule.send(:validate_targets!)
+    end
   end
 
   # @return [Hash]
@@ -49,6 +52,18 @@ class QFlow::Rule
       str = value.to_s
       str.to_sym unless str.empty?
     end.uniq
+  end
+
+  private
+
+  def validate_targets!
+    all_targets = @rules.values.flat_map { |config| config[:targets] }.uniq
+    invalid_targets = all_targets - @question_codes
+
+    return if invalid_targets.empty?
+
+    raise QFlow::DefinitionError,
+          "Error: targets #{invalid_targets.inspect} are not defined in question codes #{@question_codes.inspect}"
   end
 
   class Builder
@@ -99,7 +114,7 @@ class QFlow::Rule
 
     # @return [Hash]
     def build
-      validate_config
+      validate_config!
 
       {
         effects: @effects,
@@ -112,7 +127,7 @@ class QFlow::Rule
 
     private
 
-    def validate_config
+    def validate_config!
       # if args exists, transitions must be defined
       if @args.any? && @transitions_block.nil?
         raise QFlow::DefinitionError,
