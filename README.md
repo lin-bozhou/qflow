@@ -57,7 +57,7 @@ applier = QFlow.use(rule)
 # Calculate which questions to skip and recover
 action = applier.apply(:q1, answer: 'yes')
 puts action[:skip] # => ["q2"] (questions to skip)
-puts action[:recover] # => ["q2", "q3", "q4"] (questions to recover)
+puts action[:recover] # => ["q3", "q4"] (questions to recover)
 ```
 
 ### DSL Components
