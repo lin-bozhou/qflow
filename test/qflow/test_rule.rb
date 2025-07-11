@@ -4,7 +4,7 @@ require_relative '../test_helper'
 
 class TestRule < Minitest::Test
   def test_define_simple_question
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         effects :e1, :e2
         deps :d1, :d2
@@ -33,7 +33,7 @@ class TestRule < Minitest::Test
   end
 
   def test_question_has_transitions_but_no_predefined_answers
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         effects :e1
         deps :condition_dep
@@ -57,7 +57,7 @@ class TestRule < Minitest::Test
   end
 
   def test_empty_question_block
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         # empty
       end
@@ -74,7 +74,7 @@ class TestRule < Minitest::Test
   end
 
   def test_multiple_questions_with_different_configurations
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         effects :e1, :e2
         deps :d1, :d2
@@ -153,7 +153,7 @@ class TestRule < Minitest::Test
   end
 
   def test_clear_rules
-    rule = QFlow::Rule.new
+    rule = QFlow.define
     rule.instance_eval do
       question :q1 do
         args :answer
@@ -170,13 +170,13 @@ class TestRule < Minitest::Test
   end
 
   def test_empty_rule
-    rule = QFlow::Rule.new
+    rule = QFlow.define
     assert_empty rule.configs
     assert_empty rule.codes
   end
 
   def test_mixed_empty_and_normal_questions
-    rule = QFlow::Rule.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         args :answer
         targets :q2, :q3
@@ -228,7 +228,7 @@ class TestRule < Minitest::Test
 
   def test_question_has_args_but_missing_transitions
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           args :answer
           effects :e1
@@ -241,7 +241,7 @@ class TestRule < Minitest::Test
 
   def test_empty_question_code
     error = assert_raises(ArgumentError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question '' do
           args :answer
         end
@@ -252,7 +252,7 @@ class TestRule < Minitest::Test
 
   def test_target_in_question_block
     error = assert_raises(QFlow::UsageError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           target :q2
         end
@@ -263,7 +263,7 @@ class TestRule < Minitest::Test
 
   def test_transitions_without_block
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           args :answer
           targets :q2
@@ -276,7 +276,7 @@ class TestRule < Minitest::Test
 
   def test_transitions_without_block_with_args
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           effects :e1
           args :condition
@@ -290,7 +290,7 @@ class TestRule < Minitest::Test
 
   def test_transitions_without_args
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           effects :e1
           transitions do
@@ -304,7 +304,7 @@ class TestRule < Minitest::Test
 
   def test_transitions_without_targets
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           args :answer
           transitions do
@@ -317,7 +317,7 @@ class TestRule < Minitest::Test
   end
 
   def test_define_with_initial_question_codes
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :answer
         effects :e1
@@ -362,7 +362,7 @@ class TestRule < Minitest::Test
   end
 
   def test_define_without_initial_question_codes
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         args :answer
         effects :e1
@@ -397,7 +397,7 @@ class TestRule < Minitest::Test
   end
 
   def test_define_with_initial_codes_but_empty_block
-    rule = QFlow::Rule.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       # empty
     end
 
@@ -409,7 +409,7 @@ class TestRule < Minitest::Test
   end
 
   def test_define_with_mixed_initial_and_defined_questions
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q2 do
         args :answer
         targets :q3
@@ -447,7 +447,7 @@ class TestRule < Minitest::Test
   end
 
   def test_target_not_in_targets_raises_error
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         args :answer
         targets :q2, :q3
@@ -457,7 +457,7 @@ class TestRule < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     error = assert_raises(QFlow::UsageError) do
       applier.apply(:q1, answer: 'yes')
     end
@@ -465,7 +465,7 @@ class TestRule < Minitest::Test
   end
 
   def test_params_and_targets_functions
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         args :param1, :param2
         targets :q2, :q3, :q4
@@ -487,7 +487,7 @@ class TestRule < Minitest::Test
 
   def test_params_without_transitions_should_fail
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           args :condition
         end
@@ -498,7 +498,7 @@ class TestRule < Minitest::Test
 
   def test_targets_without_transitions_should_fail
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1 do
           targets :q2, :q3
         end
@@ -508,7 +508,7 @@ class TestRule < Minitest::Test
   end
 
   def test_params_with_transitions_should_succeed
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         args :condition
         targets :q2, :q3
@@ -526,7 +526,7 @@ class TestRule < Minitest::Test
   end
 
   def test_targets_with_transitions_should_succeed
-    rule = QFlow::Rule.define do
+    rule = QFlow.define do
       question :q1 do
         args :answer
         targets :q2, :q3
@@ -545,7 +545,7 @@ class TestRule < Minitest::Test
 
   def test_question_without_block
     error = assert_raises(ArgumentError) do
-      QFlow::Rule.define do
+      QFlow.define do
         question :q1
       end
     end

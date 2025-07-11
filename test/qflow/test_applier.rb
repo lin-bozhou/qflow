@@ -4,7 +4,7 @@ require_relative '../test_helper'
 
 class TestApplier < Minitest::Test
   def test_basic_question_transitions
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         args :answer
         targets :q3, :q4
@@ -19,7 +19,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     action = applier.apply(:q1, answer: 'yes')
     assert_equal(['q2'], action[:skip])
@@ -31,7 +31,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_question_with_dependencies
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :answer, :condition
         effects :e1
@@ -52,7 +52,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     action = applier.apply(:q1, answer: 'option1', condition: true)
     assert_equal(['q2'], action[:skip])
@@ -68,7 +68,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_question_with_effects_and_recovery
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         args :answer
         effects :important_flag
@@ -89,7 +89,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     action = applier.apply(:q1, answer: true)
     assert_equal(['q2'], action[:skip])
@@ -101,7 +101,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_transitions_without_predefined_answer_values
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         effects :e1
         args :condition
@@ -116,14 +116,14 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply(:q1, condition: true)
     assert_equal(['q2'], action[:skip])
     assert_equal(%w[q2 q3 q4], action[:recover])
   end
 
   def test_transitions_with_complex_dependencies
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4 q5 q6]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4 q5 q6]) do
       question :q1 do
         args :answer, :flag1, :flag2, :value
         effects :result_type
@@ -152,7 +152,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     action = applier.apply(:q1, answer: 'a', flag1: true, flag2: true, value: 30)
     assert_equal(['q2'], action[:skip])
@@ -180,16 +180,16 @@ class TestApplier < Minitest::Test
   end
 
   def test_empty_rule
-    rule = QFlow::Rule.define
+    rule = QFlow.define
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply('any_question')
     assert_equal([], action[:skip])
     assert_equal([], action[:recover])
   end
 
   def test_nonexistent_question
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :q2
@@ -199,27 +199,27 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply(:nonexistent)
     assert_equal([], action[:skip])
     assert_equal([], action[:recover])
   end
 
   def test_question_without_transitions
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         effects :e1
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply(:q1)
     assert_equal([], action[:skip])
     assert_equal([], action[:recover])
   end
 
   def test_transition_to_nonexistent_question
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :q3
@@ -229,7 +229,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(QFlow::FlowError) do
       applier.apply(:q1, answer: 'ok')
@@ -238,7 +238,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_missing_required_dependencies
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer, :required_param
         targets :q2
@@ -248,7 +248,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     error = assert_raises(ArgumentError) do
       applier.apply(:q1, answer: 'ok')
     end
@@ -256,7 +256,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_missing_multiple_dependencies
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer, :param1, :param2, :param3
         targets :q2
@@ -266,7 +266,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     error = assert_raises(ArgumentError) do
       applier.apply(:q1, answer: 'ok', param2: 'value')
     end
@@ -274,7 +274,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_smart_parameter_handling_no_answer_parameter
-    rule = QFlow::Rule.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q1 do
         effects :e1
         args :condition
@@ -285,14 +285,14 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply(:q1, condition: true)
     assert_equal(['q2'], action[:skip])
     assert_equal(['q3'], action[:recover])
   end
 
   def test_smart_parameter_handling_with_deps_but_no_answer_parameter
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         effects :e1
         args :condition
@@ -307,7 +307,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     action = applier.apply(:q1, condition: true)
     assert_equal(['q2'], action[:skip])
@@ -319,7 +319,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_empty_current_question
-    rule = QFlow::Rule.define(%w[q1]) do
+    rule = QFlow.define(%w[q1]) do
       question :q1 do
         args :answer
         targets :q2
@@ -329,7 +329,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(ArgumentError) do
       applier.apply('')
@@ -343,7 +343,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_invalid_question_flow_backward_jump
-    rule = QFlow::Rule.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%w[q1 q2 q3]) do
       question :q2 do
         args :answer
         targets :q1, :q3
@@ -358,7 +358,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(QFlow::FlowError) do
       applier.apply(:q2, answer: 'back')
@@ -372,7 +372,7 @@ class TestApplier < Minitest::Test
 
   def test_invalid_question_flow_same_question
     error = assert_raises(QFlow::DefinitionError) do
-      QFlow::Rule.define(%w[q1 q2]) do
+      QFlow.define(%w[q1 q2]) do
         question :q1 do
           args :answer
           targets :q1
@@ -386,7 +386,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_invalid_question_flow_nonexistent_target
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :nonexistent
@@ -396,7 +396,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(QFlow::FlowError) do
       applier.apply(:q1, answer: 'ok')
@@ -405,7 +405,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_transitions_block_misuse_in_wrong_context
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :q2
@@ -416,7 +416,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(QFlow::UsageError) do
       applier.apply(:q1, answer: true)
@@ -425,7 +425,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_effects_in_transitions_block
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :q2
@@ -436,7 +436,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(QFlow::UsageError) do
       applier.apply(:q1, answer: true)
@@ -445,7 +445,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_deps_in_transitions_block
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :q2
@@ -456,7 +456,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(QFlow::UsageError) do
       applier.apply(:q1, answer: true)
@@ -465,7 +465,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_empty_target
-    rule = QFlow::Rule.define(%w[q1 q2]) do
+    rule = QFlow.define(%w[q1 q2]) do
       question :q1 do
         args :answer
         targets :q2
@@ -475,7 +475,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     error = assert_raises(ArgumentError) do
       applier.apply(:q1, answer: 'ok')
@@ -484,7 +484,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_multiple_questions_with_complex_flow
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4 q5 q6]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4 q5 q6]) do
       question :q1 do
         args :answer
         effects :started
@@ -522,7 +522,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     action = applier.apply(:q1, answer: 'start')
     assert_equal(%w[q2 q3 q4], action[:skip])
@@ -538,7 +538,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_question_defined_in_initial_list_but_not_in_block
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
         args :answer
         targets :q4
@@ -548,7 +548,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply(:q1, answer: 'jump')
     assert_equal(%w[q2 q3], action[:skip])
     assert_equal(['q4'], action[:recover])
@@ -563,7 +563,7 @@ class TestApplier < Minitest::Test
   end
 
   def test_multiple_effects_and_complex_recovery
-    rule = QFlow::Rule.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :answer
         effects :flag1, :flag2
@@ -586,7 +586,7 @@ class TestApplier < Minitest::Test
       end
     end
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
     action = applier.apply(:q1, answer: 'proceed')
     assert_equal(%w[q2 q3 q4], action[:skip])
     assert_equal(%w[q2 q4 q3 q5], action[:recover])
@@ -641,7 +641,7 @@ class TestApplier < Minitest::Test
       tax_schedule_next
       multi_companies_next
     ]
-    rule = QFlow::Rule.define(questions) do
+    rule = QFlow.define(questions) do
       question :other_income_type do
         effects :income_type
       end
@@ -784,7 +784,7 @@ class TestApplier < Minitest::Test
     end
     assert_equal questions, rule.codes
 
-    applier = QFlow::Applier.new(rule)
+    applier = QFlow.use(rule)
 
     # other_income_type
     action = applier.apply(:other_income_type)
