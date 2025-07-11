@@ -26,7 +26,7 @@ class QFlow::Engine
 
     next_question = calc_next_question(code, config, args)
     skip_questions = calc_skip_questions(code, next_question)
-    recover_questions = calc_recover_questions(next_question, config[:effects], config[:targets])
+    recover_questions = calc_recover_questions(next_question, skip_questions, config[:effects], config[:targets])
 
     {
       skip: skip_questions,
@@ -82,10 +82,11 @@ class QFlow::Engine
   end
 
   # @param next_question [Symbol, nil]
+  # @param skip_questions [Array<String>]
   # @param effects [Array<Symbol>]
   # @param targets [Array<Symbol>]
   # @return [Array<String>]
-  def calc_recover_questions(next_question, effects, targets)
+  def calc_recover_questions(next_question, skip_questions, effects, targets)
     dep_recover = []
     effects.each do |effect|
       affected_questions = @effect_mapping[effect]
@@ -94,7 +95,8 @@ class QFlow::Engine
     dep_recover = dep_recover.uniq.map(&:to_s)
     range_recover = calc_range_recover(next_question, targets)
 
-    (dep_recover + range_recover).uniq
+    all_recover = (dep_recover + range_recover).uniq
+    all_recover - skip_questions
   end
 
   # @param next_question [Symbol, nil]
@@ -104,11 +106,11 @@ class QFlow::Engine
     return [] if next_question.nil? || targets.empty?
 
     codes = @question_rule.codes
-    current_idx = codes.index(next_question)
+    next_idx = codes.index(next_question)
     lastest_idx = targets.map { codes.index(_1) }.compact.max
 
-    return [] if current_idx.nil? || lastest_idx.nil? || current_idx > lastest_idx
+    return [] if next_idx.nil? || lastest_idx.nil? || next_idx > lastest_idx
 
-    codes[current_idx..lastest_idx].map(&:to_s)
+    codes[next_idx..lastest_idx].map(&:to_s)
   end
 end
