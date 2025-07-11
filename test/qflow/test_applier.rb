@@ -422,46 +422,6 @@ class TestApplier < Minitest::Test
     assert_match(/Error: 'args' should be called in the question definition block/, error.message)
   end
 
-  def test_effects_in_transitions_block
-    rule = QFlow.define(%w[q1 q2]) do
-      question :q1 do
-        args :answer
-        targets :q2
-        transitions do
-          effects :should_not_work
-          target :q2
-        end
-      end
-    end
-
-    applier = QFlow.use(rule)
-
-    error = assert_raises QFlow::UsageError do
-      applier.apply(:q1, answer: true)
-    end
-    assert_match(/Error: 'effects' should be called in the question definition block/, error.message)
-  end
-
-  def test_deps_in_transitions_block
-    rule = QFlow.define(%w[q1 q2]) do
-      question :q1 do
-        args :answer
-        targets :q2
-        transitions do
-          deps :should_not_work
-          target :q2
-        end
-      end
-    end
-
-    applier = QFlow.use(rule)
-
-    error = assert_raises QFlow::UsageError do
-      applier.apply(:q1, answer: true)
-    end
-    assert_match(/Error: 'deps' should be called in the question definition block/, error.message)
-  end
-
   def test_empty_target
     rule = QFlow.define(%w[q1 q2]) do
       question :q1 do

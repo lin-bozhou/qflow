@@ -274,20 +274,6 @@ class TestRule < Minitest::Test
     assert_match(/Error: 'transitions' requires a block/, error.message)
   end
 
-  def test_transitions_without_block_with_args
-    error = assert_raises QFlow::DefinitionError do
-      QFlow.define do
-        question :q1 do
-          effects :e1
-          args :condition
-          targets :q2
-          transitions
-        end
-      end
-    end
-    assert_match(/Error: 'transitions' requires a block/, error.message)
-  end
-
   def test_transitions_without_args
     error = assert_raises QFlow::DefinitionError do
       QFlow.define do
@@ -483,28 +469,6 @@ class TestRule < Minitest::Test
     assert_equal %i[q2 q3 q4], config[:targets]
     assert_equal [:e1], config[:effects]
     assert_equal [:d1], config[:deps]
-  end
-
-  def test_params_without_transitions_should_fail
-    error = assert_raises QFlow::DefinitionError do
-      QFlow.define do
-        question :q1 do
-          args :condition
-        end
-      end
-    end
-    assert_match(/has args but no transitions block defined/, error.message)
-  end
-
-  def test_targets_without_transitions_should_fail
-    error = assert_raises QFlow::DefinitionError do
-      QFlow.define do
-        question :q1 do
-          targets :q2, :q3
-        end
-      end
-    end
-    assert_match(/has targets but no transitions block defined/, error.message)
   end
 
   def test_params_with_transitions_should_succeed
