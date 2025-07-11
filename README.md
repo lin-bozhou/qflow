@@ -38,9 +38,9 @@ rule = QFlow.define(%w[q1 q2 q3 q4]) do
     targets :q3, :q4
 
     transitions do
-      case answer
+      case answer # Use parameters defined in args
       when 'yes'
-        target :q3
+        target :q3 # Jump to q3, must be in targets
       when 'no'
         target :q4
       end
@@ -48,7 +48,7 @@ rule = QFlow.define(%w[q1 q2 q3 q4]) do
   end
 
   question :q2 do
-    deps :flag1 # Depends on effect from q1
+    deps :flag1 # This question depends on flag1 effect from q1
   end
 end
 
@@ -57,8 +57,8 @@ applier = QFlow.use(rule)
 
 # Calculate which questions to skip and recover
 action = applier.apply(:q1, answer: 'yes')
-puts action[:skip] # => ["q2"] (questions to skip)
-puts action[:recover] # => ["q3", "q4"] (questions to recover)
+puts action[:skip]    # => ["q2"] - questions to skip
+puts action[:recover] # => ["q3"] - questions to recover
 ```
 
 ### DSL Components
