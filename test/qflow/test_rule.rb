@@ -73,10 +73,10 @@ class TestRule < Minitest::Test
 
     config = rule.configs[:q1]
     refute_nil config
-    assert_equal [], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:effects]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
     assert_equal [:q1], rule.codes
   end
@@ -128,33 +128,33 @@ class TestRule < Minitest::Test
     config = rule.configs[:q2]
     refute_nil config
     assert_equal [:flag3], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     config = rule.configs[:q3]
     refute_nil config
-    assert_equal [], config[:effects]
+    assert_empty config[:effects]
     assert_equal [:flag3], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     config = rule.configs[:q4]
     refute_nil config
     assert_equal [:flag4], config[:effects]
     assert_equal [:flag3], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     config = rule.configs[:q5]
     refute_nil config
-    assert_equal [], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:effects]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     assert_equal %i[q1 q2 q3 q4 q5], rule.codes
@@ -210,26 +210,26 @@ class TestRule < Minitest::Test
 
     config = rule.configs[:q1]
     refute_nil config
-    assert_equal [], config[:effects]
-    assert_equal [], config[:deps]
+    assert_empty config[:effects]
+    assert_empty config[:deps]
     assert_equal [:a1], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions_block]
 
     config = rule.configs[:q2]
     refute_nil config
-    assert_equal [], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:effects]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     config = rule.configs[:q3]
     refute_nil config
-    assert_equal [], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:effects]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     assert_equal %i[q1 q2 q3], rule.codes
@@ -336,7 +336,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q1]
     refute_nil config
     assert_equal [:flag1], config[:effects]
-    assert_equal [], config[:deps]
+    assert_empty config[:deps]
     assert_equal [:a1], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions_block]
@@ -345,8 +345,8 @@ class TestRule < Minitest::Test
     refute_nil config
     assert_equal [:flag2], config[:effects]
     assert_equal [:flag1], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     assert_nil rule.configs[:q2]
@@ -375,7 +375,7 @@ class TestRule < Minitest::Test
     config = rule.configs[:q1]
     refute_nil config
     assert_equal [:flag1], config[:effects]
-    assert_equal [], config[:deps]
+    assert_empty config[:deps]
     assert_equal [:a1], config[:args]
     assert_equal [:q2], config[:targets]
     refute_nil config[:transitions_block]
@@ -383,9 +383,9 @@ class TestRule < Minitest::Test
     config = rule.configs[:q2]
     refute_nil config
     assert_equal [:flag2], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     assert_equal %i[q1 q2], rule.codes
@@ -420,8 +420,8 @@ class TestRule < Minitest::Test
 
     config = rule.configs[:q2]
     refute_nil config
-    assert_equal [], config[:effects]
-    assert_equal [], config[:deps]
+    assert_empty config[:effects]
+    assert_empty config[:deps]
     assert_equal [:a1], config[:args]
     assert_equal [:q3], config[:targets]
     refute_nil config[:transitions_block]
@@ -429,9 +429,9 @@ class TestRule < Minitest::Test
     config = rule.configs[:q5]
     refute_nil config
     assert_equal [:flag1], config[:effects]
-    assert_equal [], config[:deps]
-    assert_equal [], config[:args]
-    assert_equal [], config[:targets]
+    assert_empty config[:deps]
+    assert_empty config[:args]
+    assert_empty config[:targets]
     assert_nil config[:transitions_block]
 
     assert_nil rule.configs[:q1]

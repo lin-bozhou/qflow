@@ -36,4 +36,4 @@ Style/Documentation:
 Style/FormatStringToken:
   Enabled: false
 Style/HashSyntax:
-  EnforcedShorthandSyntax: consistent
+  EnforcedShorthandSyntax: always
