@@ -574,7 +574,7 @@ class TestRule < Minitest::Test
         end
       end
     end
-    assert_match(/Error: question 'q1' has deps that overlap with its effects: \[:flag1\]/, error.message)
+    assert_match(/Error: question 'q1' has deps that overlap with its effects \[:flag1\]/, error.message)
   end
 
   def test_deps_and_effects_no_overlap_should_succeed

@@ -174,7 +174,7 @@ class QFlow::Rule
       return unless @deps.intersect?(@effects)
 
       raise QFlow::DefinitionError,
-            "Error: question '#{@current_question}' has deps that overlap with its effects: #{@deps & @effects}"
+            "Error: question '#{@current_question}' has deps that overlap with its effects #{@deps & @effects}"
     end
   end
 end
