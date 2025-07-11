@@ -3,7 +3,7 @@
 require_relative 'engine'
 
 class QFlow::Applier
-  # @param question_rule [Rule]
+  # @param question_rule [QFlow::Rule]
   def initialize(question_rule)
     @engine = QFlow::Engine.new(question_rule)
   end

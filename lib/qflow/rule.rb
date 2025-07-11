@@ -11,7 +11,7 @@ class QFlow::Rule
 
   # @param initial_questions [Array<String, Symbol>]
   # @param &block [Proc]
-  # @return [Rule]
+  # @return [QFlow::Rule]
   def self.define(initial_questions = [], &)
     new(initial_questions).tap { _1.instance_eval(&) if block_given? }
   end

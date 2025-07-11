@@ -4,7 +4,7 @@ require_relative 'errors'
 require_relative 'transition'
 
 class QFlow::Engine
-  # @param question_rule [Rule]
+  # @param question_rule [QFlow::Rule]
   def initialize(question_rule)
     @question_rule = question_rule
     @effect_mapping = {}
