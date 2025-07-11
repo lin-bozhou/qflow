@@ -7,8 +7,6 @@ Lint/EmptyClass:
   Enabled: false
 Layout/EndOfLine:
   Enabled: false
-Layout/LineLength:
-  Enabled: true
 Lint/MissingSuper:
   Enabled: false
 Lint/ScriptPermission:
@@ -31,6 +29,8 @@ Naming/PredicateMethod:
   Enabled: false
 Style/ClassAndModuleChildren:
   EnforcedStyle: compact
+Style/CombinableLoops:
+  Enabled: false
 Style/Documentation:
   Enabled: false
 Style/FormatStringToken:

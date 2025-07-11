@@ -816,7 +816,7 @@ class TestApplier < Minitest::Test
     assert_equal questions.between(:resign_in_year, :salary_more), action[:recover]
 
     action = applier.apply(:adj_in_this_company, answer: false)
-    assert_equal %w[resign_in_year disaster_sufferer], action[:skip]
+    assert_equal questions.between(:resign_in_year, :disaster_sufferer), action[:skip]
     assert_equal questions.between(:tax_schedule, :salary_more), action[:recover]
 
     # resign_in_year
@@ -834,32 +834,41 @@ class TestApplier < Minitest::Test
     assert_equal questions.between(:tax_schedule, :salary_more), action[:recover]
 
     # tax_schedule
+    # first
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: true, resign_before_year_end: true)
     assert_equal questions.between(:multi_companies, :salary_more_next), action[:skip]
     assert_empty action[:recover]
+
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: true, resign_before_year_end: false)
     assert_equal questions.between(:multi_companies, :housing_loan), action[:skip]
     assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: false, resign_before_year_end: true)
     assert_equal questions.between(:multi_companies, :salary_more), action[:skip]
     assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: false, resign_before_year_end: false)
     assert_equal questions.between(:multi_companies, :salary_more), action[:skip]
     assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
 
+    # second
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: true, resign_before_year_end: true)
     assert_equal questions.between(:multi_companies, :salary_more_next), action[:skip]
     assert_empty action[:recover]
+
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: true, resign_before_year_end: false)
     assert_equal questions.between(:multi_companies, :housing_loan), action[:skip]
     assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: false, resign_before_year_end: true)
     assert_equal questions.between(:multi_companies, :salary_more_next), action[:skip]
     assert_empty action[:recover]
+
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: false, resign_before_year_end: false)
     assert_equal questions.between(:multi_companies, :housing_loan), action[:skip]
     assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
 
+    # nil
     [true, false].product([true, false]).each do |not_need_adj, resign_before_year_end|
       action = applier.apply(:tax_schedule, answer: nil, not_need_adj:, resign_before_year_end:)
       assert_empty action[:skip]
@@ -867,11 +876,83 @@ class TestApplier < Minitest::Test
     end
 
     # multi_companies
+    # true
+    [true, false].product([true, false]).each do |not_need_adj, resign_before_year_end|
+      action = applier.apply(:multi_companies, answer: true, not_need_adj:, resign_before_year_end:)
+      assert_empty action[:skip]
+      assert_equal questions.between(:salary_more, :salary_more_next), action[:recover]
+    end
+
+    # false
+    action = applier.apply(:multi_companies, answer: false, not_need_adj: true, resign_before_year_end: true)
+    assert_equal questions.between(:salary_more, :salary_more_next), action[:skip]
+    assert_empty action[:recover]
+
+    action = applier.apply(:multi_companies, answer: false, not_need_adj: true, resign_before_year_end: false)
+    assert_equal questions.between(:salary_more, :housing_loan), action[:skip]
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+
+    action = applier.apply(:multi_companies, answer: false, not_need_adj: false, resign_before_year_end: true)
+    assert_equal %w[salary_more], action[:skip]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+
+    action = applier.apply(:multi_companies, answer: false, not_need_adj: false, resign_before_year_end: false)
+    assert_equal %w[salary_more], action[:skip]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
 
     # salary_more
+    # true
+    action = applier.apply(:salary_more, answer: true, not_need_adj: true, resign_before_year_end: true)
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:skip]
+    assert_empty action[:recover]
+
+    action = applier.apply(:salary_more, answer: true, not_need_adj: true, resign_before_year_end: false)
+    assert_equal questions.between(:life_insurances, :housing_loan), action[:skip]
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+
+    action = applier.apply(:salary_more, answer: true, not_need_adj: false, resign_before_year_end: true)
+    assert_empty action[:skip]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+
+    action = applier.apply(:salary_more, answer: true, not_need_adj: false, resign_before_year_end: false)
+    assert_empty action[:skip]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+
+    # false
+    action = applier.apply(:salary_more, answer: false, not_need_adj: true, resign_before_year_end: true)
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:skip]
+    assert_empty action[:recover]
+
+    action = applier.apply(:salary_more, answer: false, not_need_adj: true, resign_before_year_end: false)
+    assert_equal questions.between(:life_insurances, :housing_loan), action[:skip]
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+
+    action = applier.apply(:salary_more, answer: false, not_need_adj: false, resign_before_year_end: true)
+    assert_equal questions.between(:life_insurances, :salary_more_next), action[:skip]
+    assert_empty action[:recover]
+
+    action = applier.apply(:salary_more, answer: false, not_need_adj: false, resign_before_year_end: false)
+    assert_equal questions.between(:life_insurances, :housing_loan), action[:skip]
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
 
     # tax_schedule_next
+    %w[first second].each do |answer|
+      action = applier.apply(:tax_schedule_next, answer:)
+      assert_equal questions.between(:multi_companies_next, :salary_more_next), action[:skip]
+      assert_empty action[:recover]
+    end
+
+    action = applier.apply(:tax_schedule_next, answer: nil)
+    assert_empty action[:skip]
+    assert_equal questions.between(:multi_companies_next, :salary_more_next), action[:recover]
 
     # multi_companies_next
+    action = applier.apply(:multi_companies_next, answer: true)
+    assert_empty action[:skip]
+    assert_equal %w[salary_more_next], action[:recover]
+
+    action = applier.apply(:multi_companies_next, answer: false)
+    assert_equal %w[salary_more_next], action[:skip]
+    assert_empty action[:recover]
   end
 end
