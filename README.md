@@ -40,7 +40,7 @@ rule = QFlow.define(%w[q1 q2 q3 q4]) do
     transitions do
       case answer # Use parameters defined in args
       when 'yes'
-        target :q3 # Jump to q3, must be defined in targets
+        target :q3 # Next question, must be defined in targets
       when 'no'
         target :q4
       end
@@ -74,3 +74,29 @@ puts action[:recover] # => ["q3"] - questions to recover
 #### Flow Calculation
 - **skip**: Questions between current and target that should be skipped
 - **recover**: Questions that should be recovered based on dependencies and effects
+
+## Development
+
+### Run lint
+
+Ensure code quality with RuboCop:
+
+```shell
+bundle exec rake rubocop
+```
+
+### Run test
+
+Run the test suite to ensure everything works as expected:
+
+```shell
+bundle exec rake test
+```
+
+### Run build
+
+Build the gem package:
+
+```shell
+bundle exec gem build
+```
