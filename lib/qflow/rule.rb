@@ -87,36 +87,36 @@ class QFlow::Rule
       @deps = []
       @args = []
       @targets = []
-      @transitions_block = nil
+      @transitions = nil
 
       instance_eval(&) if block_given?
     end
 
     # @param effect_vars [Array<String, Symbol>]
     def effects(*effect_vars)
-      @effects = QFlow::Rule.normalize_symbols(effect_vars)
+      @effects |= QFlow::Rule.normalize_symbols(effect_vars)
     end
 
     # @param dep_vars [Array<String, Symbol>]
     def deps(*dep_vars)
-      @deps = QFlow::Rule.normalize_symbols(dep_vars)
+      @deps |= QFlow::Rule.normalize_symbols(dep_vars)
     end
 
     # @param arg_vars [Array<String, Symbol>]
     def args(*arg_vars)
-      @args = QFlow::Rule.normalize_symbols(arg_vars)
+      @args |= QFlow::Rule.normalize_symbols(arg_vars)
     end
 
     # @param target_list [Array<String, Symbol>]
     def targets(*target_list)
-      @targets = QFlow::Rule.normalize_symbols(target_list)
+      @targets |= QFlow::Rule.normalize_symbols(target_list)
     end
 
     # @param &block [Proc]
     def transitions(&block)
       raise QFlow::DefinitionError, "Error: 'transitions' requires a block" unless block_given?
 
-      @transitions_block = block
+      @transitions = block
     end
 
     def target(*)
@@ -133,7 +133,7 @@ class QFlow::Rule
         deps: @deps,
         args: @args,
         targets: @targets,
-        transitions_block: @transitions_block
+        transitions: @transitions
       }
     end
 
@@ -141,25 +141,25 @@ class QFlow::Rule
 
     def validate_config!
       # if args exists, transitions must be defined
-      if @args.any? && @transitions_block.nil?
+      if @args.any? && @transitions.nil?
         raise QFlow::DefinitionError,
               "Error: question '#{@current_question}' has args but no transitions block defined"
       end
 
       # if targets exists, transitions must be defined
-      if @targets.any? && @transitions_block.nil?
+      if @targets.any? && @transitions.nil?
         raise QFlow::DefinitionError,
               "Error: question '#{@current_question}' has targets but no transitions block defined"
       end
 
       # if transitions exists, must have args defined
-      if @transitions_block && @args.empty?
+      if @transitions && @args.empty?
         raise QFlow::DefinitionError,
               "Error: question '#{@current_question}' has transitions but no args defined"
       end
 
       # if transitions exists, must have targets defined
-      if @transitions_block && @targets.empty?
+      if @transitions && @targets.empty?
         raise QFlow::DefinitionError,
               "Error: question '#{@current_question}' has transitions but no targets defined"
       end

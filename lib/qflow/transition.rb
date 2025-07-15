@@ -14,7 +14,7 @@ class QFlow::Transition
     @allowed_targets = allowed_targets || []
     @target = nil
 
-    validate_args
+    validate_args!
     setup_args
   end
 
@@ -56,7 +56,7 @@ class QFlow::Transition
 
   private
 
-  def validate_args
+  def validate_args!
     return if @args_config.empty?
 
     missing_args = @args_config - @args.keys

@@ -55,7 +55,7 @@ class QFlow::Engine
   # @param args [Hash]
   # @return [Symbol, nil]
   def calc_next_question(question_code, question_config, args)
-    transitions_block = question_config[:transitions_block]
+    transitions_block = question_config[:transitions]
     args_config = question_config[:args]
     targets_config = question_config[:targets]
     return nil unless transitions_block
