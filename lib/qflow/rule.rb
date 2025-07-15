@@ -4,20 +4,14 @@ require_relative 'errors'
 
 class QFlow::Rule
   # @param initial_questions [Array<String, Symbol>]
-  def initialize(initial_questions = [])
+  # @param &block [Proc]
+  def initialize(initial_questions = [], &)
     @rules = {}
     @question_codes = self.class.normalize_symbols(initial_questions)
-  end
 
-  # @param initial_questions [Array<String, Symbol>]
-  # @param &block [Proc]
-  # @return [QFlow::Rule]
-  def self.define(initial_questions = [], &)
-    new(initial_questions).tap do |rule|
-      rule.instance_eval(&) if block_given?
-      rule.send(:validate_targets!)
-      rule.send(:validate_deps!)
-    end
+    instance_eval(&) if block_given?
+    validate_targets!
+    validate_deps!
   end
 
   # @return [Hash]

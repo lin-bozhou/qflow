@@ -16,6 +16,6 @@ module QFlow
   # @param &block [Proc]
   # @return [QFlow::Rule]
   def self.define(initial_questions = [], &)
-    Rule.define(initial_questions, &)
+    Rule.new(initial_questions, &)
   end
 end
