@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 3.1.0'
   spec.require_paths = ['lib']
   spec.files = Dir.chdir(__dir__) do
-    Dir['lib/**/*', 'README*', '*.gemspec'].reject { File.directory?(_1) }
+    Dir['exe/**/*', 'lib/**/*', 'README*', 'LICENSE*', '*.gemspec'].reject { File.directory?(_1) }
   end
 
   spec.bindir = 'exe'
