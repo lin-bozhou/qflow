@@ -5,7 +5,9 @@ require 'minitest/test_task'
 
 RuboCop::RakeTask.new do |task|
   task.options = %w[--config .rubocop.yml]
+  task.formatters = ['github'] if ENV['GITHUB_ACTIONS']
 end
+
 Minitest::TestTask.create
 
 task default: %i[rubocop test]
