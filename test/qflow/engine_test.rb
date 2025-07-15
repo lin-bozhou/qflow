@@ -2,7 +2,7 @@
 
 require_relative '../test_helper'
 
-class TestApplier < Minitest::Test
+class EngineTest < Minitest::Test
   def test_basic_question_transitions
     rule = QFlow.define(%w[q1 q2 q3 q4]) do
       question :q1 do
@@ -27,7 +27,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: 'no')
     assert_equal %w[q2 q3], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_question_with_dependencies
@@ -64,7 +64,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: 'option2', a2: true)
     assert_equal %w[q2 q3 q4], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_question_with_effects_and_recovery
@@ -97,7 +97,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: false)
     assert_equal %w[q2 q3], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_transitions_without_predefined_answer_values
@@ -173,11 +173,11 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: 'b', a2: true, a3: true, a4: 40)
     assert_equal %w[q2 q3 q4 q5], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
 
     action = applier.apply(:q1, a1: 'c', a2: true, a3: true, a4: 60)
     assert_equal %w[q2 q3 q4 q5], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_empty_rule
@@ -237,7 +237,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: 'ok')
     assert_equal %w[q2], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_missing_required_dependencies
@@ -294,7 +294,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: true)
     assert_equal %w[q2], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_smart_parameter_handling_with_deps_but_no_answer_parameter
@@ -321,7 +321,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: false)
     assert_equal %w[q2 q3], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_empty_current_question
@@ -373,7 +373,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q2, a1: 'forward')
     assert_empty action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_invalid_question_flow_same_question
@@ -518,7 +518,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q1, a1: 'start')
     assert_equal %w[q2 q3 q4], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
 
     action = applier.apply(:q4, a1: 'continue')
     assert_empty action[:skip]
@@ -526,7 +526,7 @@ class TestApplier < Minitest::Test
 
     action = applier.apply(:q4, a1: 'skip')
     assert_equal %w[q5], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
   end
 
   def test_question_defined_in_initial_list_but_not_in_block
@@ -543,7 +543,7 @@ class TestApplier < Minitest::Test
     applier = QFlow.use(rule)
     action = applier.apply(:q1, a1: 'jump')
     assert_equal %w[q2 q3], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
 
     action = applier.apply(:q2)
     assert_empty action[:skip]
@@ -581,7 +581,115 @@ class TestApplier < Minitest::Test
     applier = QFlow.use(rule)
     action = applier.apply(:q1, a1: 'proceed')
     assert_equal %w[q2 q3 q4], action[:skip]
-    assert_equal [], action[:recover]
+    assert_empty action[:recover]
+  end
+
+  def test_multiple_calls_in_real_scenario
+    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
+      question :q1 do
+        args :a1
+        effects :flag1
+        targets :q3
+
+        args :a2, :a3
+        effects :flag2
+        targets :q4, :q5
+
+        transitions do
+          case a1
+          when 'path1'
+            target a2 ? :q3 : :q4
+          when 'path2'
+            target a3 ? :q4 : :q5
+          end
+        end
+      end
+
+      question :q2 do
+        deps :flag1
+        deps :flag2
+      end
+    end
+
+    applier = QFlow.use(rule)
+
+    action = applier.apply(:q1, a1: 'path1', a2: true, a3: false)
+    assert_equal %w[q2], action[:skip]
+    assert_equal %w[q3 q4], action[:recover]
+
+    action = applier.apply(:q1, a1: 'path2', a2: false, a3: true, extra_param: 'ignored')
+    assert_equal %w[q2 q3], action[:skip]
+    assert_equal %w[q4], action[:recover]
+  end
+
+  def test_all_string_parameters_applier
+    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+      question 'q1' do
+        args 'a1'
+        effects 'flag1'
+        targets 'q3', 'q4'
+
+        transitions do
+          case a1
+          when 'yes'
+            target 'q3'
+          when 'no'
+            target 'q4'
+          end
+        end
+      end
+
+      question 'q2' do
+        deps 'flag1'
+      end
+    end
+
+    applier = QFlow.use(rule)
+
+    action = applier.apply('q1', a1: 'yes')
+    assert_equal %w[q2], action[:skip]
+    assert_equal %w[q3], action[:recover]
+
+    action = applier.apply('q1', a1: 'no')
+    assert_equal %w[q2 q3], action[:skip]
+    assert_empty action[:recover]
+  end
+
+  def test_mixed_string_and_symbol_parameters_applier
+    rule = QFlow.define(['q1', :q2, 'q3', :q4]) do
+      question 'q1' do
+        args 'a1', :a2
+        effects :flag1, 'flag2'
+        targets 'q3', :q4
+
+        transitions do
+          case a1
+          when 'option1'
+            target a2 ? 'q3' : :q4
+          when 'option2'
+            target :q4
+          end
+        end
+      end
+
+      question :q2 do
+        deps 'flag1', :flag2
+      end
+    end
+
+    applier = QFlow.use(rule)
+
+    action = applier.apply('q1', a1: 'option1', a2: true)
+    assert_equal %w[q2], action[:skip]
+    assert_equal %w[q3], action[:recover]
+
+    action = applier.apply('q1', a1: 'option1', a2: false)
+    assert_equal %w[q2 q3], action[:skip]
+    assert_empty action[:recover]
+
+    action = applier.apply(:q1, a1: 'option2', a2: true)
+    assert_equal %w[q2 q3], action[:skip]
+    assert_empty action[:recover]
   end
 
   def test_complex_flow_with_multiple_conditions
@@ -621,17 +729,19 @@ class TestApplier < Minitest::Test
       salary_more_next
       attachments
     ]
-    def questions.between(start_code, end_code)
-      start_index = index(start_code.to_sym)
-      end_index = index(end_code.to_sym)
 
-      if start_index.nil? || end_index.nil? || start_index > end_index
+    def questions.between(start_code, end_code)
+      start_idx = index(start_code.to_sym)
+      end_idx = index(end_code.to_sym)
+
+      if start_idx.nil? || end_idx.nil? || start_idx > end_idx
         raise ArgumentError,
               "Invalid question codes: start_code=#{start_code}, end_code=#{end_code}"
       end
 
-      self[start_index..end_index].map(&:to_s)
+      self[start_idx..end_idx].map(&:to_s)
     end
+
     defined_questions = %i[
       other_income_type
       all_income
@@ -644,6 +754,7 @@ class TestApplier < Minitest::Test
       tax_schedule_next
       multi_companies_next
     ]
+
     rule = QFlow.define(questions) do
       question :other_income_type do
         effects :income_type
