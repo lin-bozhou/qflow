@@ -17,9 +17,9 @@ class RuleTest < Minitest::Test
 
         transitions do
           case a1
-          when true
+          in true
             target :q2
-          when false
+          in false
             target a2? ? :q3 : :q4
           end
         end
@@ -91,9 +91,9 @@ class RuleTest < Minitest::Test
 
         transitions do
           case a1
-          when true
+          in true
             target :q2
-          when false
+          in false
             target :q3
           end
         end
@@ -191,9 +191,9 @@ class RuleTest < Minitest::Test
         targets :q2, :q3
         transitions do
           case a1
-          when 'yes'
+          in 'yes'
             target :q2
-          when 'no'
+          in 'no'
             target :q3
           end
         end
@@ -319,9 +319,9 @@ class RuleTest < Minitest::Test
         targets :q2, :q3
         transitions do
           case a1
-          when 'yes'
+          in 'yes'
             target :q2
-          when 'no'
+          in 'no'
             target :q3
           end
         end
@@ -711,9 +711,9 @@ class RuleTest < Minitest::Test
 
         transitions do
           case a1
-          when 'option1'
+          in 'option1'
             target :q2
-          when 'option2'
+          in 'option2'
             target :q3
           end
         end

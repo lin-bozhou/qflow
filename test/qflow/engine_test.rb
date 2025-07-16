@@ -10,9 +10,9 @@ class EngineTest < Minitest::Test
         targets :q3, :q4
         transitions do
           case a1
-          when 'yes'
+          in 'yes'
             target :q3
-          when 'no'
+          in 'no'
             target :q4
           end
         end
@@ -22,12 +22,12 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'yes')
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3], action.recover
 
     action = applier.apply(:q1, a1: 'no')
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
   end
 
   def test_question_with_dependencies
@@ -39,9 +39,9 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when 'option1'
+          in 'option1'
             target a2 ? :q3 : :q4
-          when 'option2'
+          in 'option2'
             target :q5
           end
         end
@@ -55,16 +55,16 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'option1', a2: true)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3 q4], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3 q4], action.recover
 
     action = applier.apply(:q1, a1: 'option1', a2: false)
-    assert_equal %w[q2 q3], action[:skip]
-    assert_equal %w[q4], action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_equal %w[q4], action.recover
 
     action = applier.apply(:q1, a1: 'option2', a2: true)
-    assert_equal %w[q2 q3 q4], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3 q4], action.skip
+    assert_empty action.recover
   end
 
   def test_question_with_effects_and_recovery
@@ -76,9 +76,9 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when true
+          in true
             target :q3
-          when false
+          in false
             target :q4
           end
         end
@@ -92,12 +92,12 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: true)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3], action.recover
 
     action = applier.apply(:q1, a1: false)
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
   end
 
   def test_transitions_without_predefined_answer_values
@@ -119,8 +119,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: true)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3], action.recover
   end
 
   def test_transitions_with_complex_dependencies
@@ -132,7 +132,7 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when 'a'
+          in 'a'
             if a2 && a3
               target :q3
             elsif a2
@@ -140,9 +140,9 @@ class EngineTest < Minitest::Test
             else
               target :q5
             end
-          when 'b'
+          in 'b'
             target a4 > 50 ? :q3 : :q6
-          when 'c'
+          in 'c'
             target :q6
           end
         end
@@ -156,28 +156,28 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'a', a2: true, a3: true, a4: 30)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3 q4 q5], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3 q4 q5], action.recover
 
     action = applier.apply(:q1, a1: 'a', a2: true, a3: false, a4: 30)
-    assert_equal %w[q2 q3], action[:skip]
-    assert_equal %w[q4 q5], action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_equal %w[q4 q5], action.recover
 
     action = applier.apply(:q1, a1: 'a', a2: false, a3: true, a4: 30)
-    assert_equal %w[q2 q3 q4], action[:skip]
-    assert_equal %w[q5], action[:recover]
+    assert_equal %w[q2 q3 q4], action.skip
+    assert_equal %w[q5], action.recover
 
     action = applier.apply(:q1, a1: 'b', a2: true, a3: true, a4: 60)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3 q4 q5], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3 q4 q5], action.recover
 
     action = applier.apply(:q1, a1: 'b', a2: true, a3: true, a4: 40)
-    assert_equal %w[q2 q3 q4 q5], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3 q4 q5], action.skip
+    assert_empty action.recover
 
     action = applier.apply(:q1, a1: 'c', a2: true, a3: true, a4: 60)
-    assert_equal %w[q2 q3 q4 q5], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3 q4 q5], action.skip
+    assert_empty action.recover
   end
 
   def test_empty_rule
@@ -186,8 +186,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply('any_question')
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
   end
 
   def test_nonexistent_question
@@ -204,8 +204,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:nonexistent)
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
   end
 
   def test_question_without_transitions
@@ -218,8 +218,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1)
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
   end
 
   def test_transition_to_nonexistent_question
@@ -236,8 +236,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'ok')
-    assert_equal %w[q2], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_empty action.recover
   end
 
   def test_missing_required_dependencies
@@ -293,8 +293,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: true)
-    assert_equal %w[q2], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_empty action.recover
   end
 
   def test_smart_parameter_handling_with_deps_but_no_answer_parameter
@@ -316,12 +316,12 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: true)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3], action.recover
 
     action = applier.apply(:q1, a1: false)
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
   end
 
   def test_empty_current_question
@@ -355,9 +355,9 @@ class EngineTest < Minitest::Test
         targets :q1, :q3
         transitions do
           case a1
-          when 'back'
+          in 'back'
             target :q1
-          when 'forward'
+          in 'forward'
             target :q3
           end
         end
@@ -372,8 +372,8 @@ class EngineTest < Minitest::Test
     assert_match(/Error: invalid question flow: current=q2, next=q1/, error.message)
 
     action = applier.apply(:q2, a1: 'forward')
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
   end
 
   def test_invalid_question_flow_same_question
@@ -468,8 +468,8 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'skip_to_end')
-    skip_questions = action[:skip]
-    recover_questions = action[:recover]
+    skip_questions = action.skip
+    recover_questions = action.recover
 
     overlap = skip_questions & recover_questions
     assert_empty overlap, "Skip and recover should not overlap: #{overlap}"
@@ -501,9 +501,9 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when 'continue'
+          in 'continue'
             target :q5
-          when 'skip'
+          in 'skip'
             target :q6
           end
         end
@@ -517,16 +517,16 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'start')
-    assert_equal %w[q2 q3 q4], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3 q4], action.skip
+    assert_empty action.recover
 
     action = applier.apply(:q4, a1: 'continue')
-    assert_empty action[:skip]
-    assert_equal %w[q5], action[:recover]
+    assert_empty action.skip
+    assert_equal %w[q5], action.recover
 
     action = applier.apply(:q4, a1: 'skip')
-    assert_equal %w[q5], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q5], action.skip
+    assert_empty action.recover
   end
 
   def test_question_defined_in_initial_list_but_not_in_block
@@ -542,16 +542,16 @@ class EngineTest < Minitest::Test
 
     applier = QFlow.use(rule)
     action = applier.apply(:q1, a1: 'jump')
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
 
     action = applier.apply(:q2)
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
 
     action = applier.apply(:q3)
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
   end
 
   def test_multiple_effects_and_complex_recovery
@@ -580,8 +580,8 @@ class EngineTest < Minitest::Test
 
     applier = QFlow.use(rule)
     action = applier.apply(:q1, a1: 'proceed')
-    assert_equal %w[q2 q3 q4], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3 q4], action.skip
+    assert_empty action.recover
   end
 
   def test_multiple_calls_in_real_scenario
@@ -597,9 +597,9 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when 'path1'
+          in 'path1'
             target a2 ? :q3 : :q4
-          when 'path2'
+          in 'path2'
             target a3 ? :q4 : :q5
           end
         end
@@ -614,12 +614,12 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply(:q1, a1: 'path1', a2: true, a3: false)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3 q4], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3 q4], action.recover
 
     action = applier.apply(:q1, a1: 'path2', a2: false, a3: true, extra_param: 'ignored')
-    assert_equal %w[q2 q3], action[:skip]
-    assert_equal %w[q4], action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_equal %w[q4], action.recover
   end
 
   def test_all_string_parameters_applier
@@ -631,9 +631,9 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when 'yes'
+          in 'yes'
             target 'q3'
-          when 'no'
+          in 'no'
             target 'q4'
           end
         end
@@ -647,12 +647,12 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply('q1', a1: 'yes')
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3], action.recover
 
     action = applier.apply('q1', a1: 'no')
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
   end
 
   def test_mixed_string_and_symbol_parameters_applier
@@ -664,9 +664,9 @@ class EngineTest < Minitest::Test
 
         transitions do
           case a1
-          when 'option1'
+          in 'option1'
             target a2 ? 'q3' : :q4
-          when 'option2'
+          in 'option2'
             target :q4
           end
         end
@@ -680,16 +680,16 @@ class EngineTest < Minitest::Test
     applier = QFlow.use(rule)
 
     action = applier.apply('q1', a1: 'option1', a2: true)
-    assert_equal %w[q2], action[:skip]
-    assert_equal %w[q3], action[:recover]
+    assert_equal %w[q2], action.skip
+    assert_equal %w[q3], action.recover
 
     action = applier.apply('q1', a1: 'option1', a2: false)
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
 
     action = applier.apply(:q1, a1: 'option2', a2: true)
-    assert_equal %w[q2 q3], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[q2 q3], action.skip
+    assert_empty action.recover
   end
 
   def test_complex_flow_with_multiple_conditions
@@ -770,9 +770,9 @@ class EngineTest < Minitest::Test
         targets :resign_in_year, :tax_schedule
         transitions do
           case answer
-          when true
+          in true
             target :resign_in_year
-          when false
+          in false
             target :tax_schedule
           end
         end
@@ -784,9 +784,9 @@ class EngineTest < Minitest::Test
         targets :disaster_sufferer, :tax_schedule
         transitions do
           case answer
-          when true
+          in true
             target :tax_schedule
-          when false
+          in false
             target :disaster_sufferer
           end
         end
@@ -802,7 +802,7 @@ class EngineTest < Minitest::Test
         targets :multi_companies, :attachments, :basic_infos_next, :life_insurances
         transitions do
           case answer
-          when 'first'
+          in 'first'
             if !not_need_adj
               target :life_insurances
             elsif not_need_adj && resign_before_year_end
@@ -810,13 +810,13 @@ class EngineTest < Minitest::Test
             elsif not_need_adj && !resign_before_year_end
               target :basic_infos_next
             end
-          when 'second'
+          in 'second'
             if resign_before_year_end
               target :attachments
             else
               target :basic_infos_next
             end
-          when nil
+          in nil
             target :multi_companies
           end
         end
@@ -828,9 +828,9 @@ class EngineTest < Minitest::Test
         targets :salary_more, :attachments, :basic_infos_next, :life_insurances
         transitions do
           case answer
-          when true
+          in true
             target :salary_more
-          when false
+          in false
             if !not_need_adj
               target :life_insurances
             elsif not_need_adj && resign_before_year_end
@@ -848,7 +848,7 @@ class EngineTest < Minitest::Test
         targets :life_insurances, :attachments, :basic_infos_next
         transitions do
           case answer
-          when true
+          in true
             if !not_need_adj
               target :life_insurances
             elsif not_need_adj && resign_before_year_end
@@ -856,7 +856,7 @@ class EngineTest < Minitest::Test
             elsif not_need_adj && !resign_before_year_end
               target :basic_infos_next
             end
-          when false
+          in false
             if resign_before_year_end
               target :attachments
             else
@@ -871,9 +871,9 @@ class EngineTest < Minitest::Test
         targets :multi_companies_next, :attachments
         transitions do
           case answer
-          when 'first', 'second'
+          in 'first' | 'second'
             target :attachments
-          when nil
+          in nil
             target :multi_companies_next
           end
         end
@@ -884,9 +884,9 @@ class EngineTest < Minitest::Test
         targets :salary_more_next, :attachments
         transitions do
           case answer
-          when true
+          in true
             target :salary_more_next
-          when false
+          in false
             target :attachments
           end
         end
@@ -907,163 +907,163 @@ class EngineTest < Minitest::Test
     # not directly defined questions
     (questions - defined_questions).each do |q|
       action = applier.apply(q)
-      assert_empty action[:skip]
-      assert_empty action[:recover]
+      assert_empty action.skip
+      assert_empty action.recover
     end
 
     # other_income_type
     action = applier.apply(:other_income_type)
-    assert_empty action[:skip]
-    assert_equal %w[all_income], action[:recover]
+    assert_empty action.skip
+    assert_equal %w[all_income], action.recover
 
     # all_income
     action = applier.apply(:all_income)
-    assert_empty action[:skip]
-    assert_empty action[:recover]
+    assert_empty action.skip
+    assert_empty action.recover
 
     # adj_in_this_company
     action = applier.apply(:adj_in_this_company, answer: true)
-    assert_empty action[:skip]
-    assert_equal questions.between(:resign_in_year, :salary_more), action[:recover]
+    assert_empty action.skip
+    assert_equal questions.between(:resign_in_year, :salary_more), action.recover
 
     action = applier.apply(:adj_in_this_company, answer: false)
-    assert_equal questions.between(:resign_in_year, :disaster_sufferer), action[:skip]
-    assert_equal questions.between(:tax_schedule, :salary_more), action[:recover]
+    assert_equal questions.between(:resign_in_year, :disaster_sufferer), action.skip
+    assert_equal questions.between(:tax_schedule, :salary_more), action.recover
 
     # resign_in_year
     action = applier.apply(:resign_in_year, answer: true)
-    assert_equal %w[disaster_sufferer], action[:skip]
-    assert_equal questions.between(:tax_schedule, :salary_more), action[:recover]
+    assert_equal %w[disaster_sufferer], action.skip
+    assert_equal questions.between(:tax_schedule, :salary_more), action.recover
 
     action = applier.apply(:resign_in_year, answer: false)
-    assert_empty action[:skip]
-    assert_equal questions.between(:disaster_sufferer, :salary_more), action[:recover]
+    assert_empty action.skip
+    assert_equal questions.between(:disaster_sufferer, :salary_more), action.recover
 
     # disaster_sufferer
     action = applier.apply(:disaster_sufferer)
-    assert_empty action[:skip]
-    assert_equal questions.between(:tax_schedule, :salary_more), action[:recover]
+    assert_empty action.skip
+    assert_equal questions.between(:tax_schedule, :salary_more), action.recover
 
     # tax_schedule
     # first
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: true, resign_before_year_end: true)
-    assert_equal questions.between(:multi_companies, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:multi_companies, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: true, resign_before_year_end: false)
-    assert_equal questions.between(:multi_companies, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:multi_companies, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: false, resign_before_year_end: true)
-    assert_equal questions.between(:multi_companies, :salary_more), action[:skip]
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+    assert_equal questions.between(:multi_companies, :salary_more), action.skip
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.recover
 
     action = applier.apply(:tax_schedule, answer: 'first', not_need_adj: false, resign_before_year_end: false)
-    assert_equal questions.between(:multi_companies, :salary_more), action[:skip]
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+    assert_equal questions.between(:multi_companies, :salary_more), action.skip
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.recover
 
     # second
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: true, resign_before_year_end: true)
-    assert_equal questions.between(:multi_companies, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:multi_companies, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: true, resign_before_year_end: false)
-    assert_equal questions.between(:multi_companies, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:multi_companies, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: false, resign_before_year_end: true)
-    assert_equal questions.between(:multi_companies, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:multi_companies, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:tax_schedule, answer: 'second', not_need_adj: false, resign_before_year_end: false)
-    assert_equal questions.between(:multi_companies, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:multi_companies, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     # nil
     [true, false].product([true, false]).each do |not_need_adj, resign_before_year_end|
       action = applier.apply(:tax_schedule, answer: nil, not_need_adj:, resign_before_year_end:)
-      assert_empty action[:skip]
-      assert_equal questions.between(:multi_companies, :salary_more_next), action[:recover]
+      assert_empty action.skip
+      assert_equal questions.between(:multi_companies, :salary_more_next), action.recover
     end
 
     # multi_companies
     # true
     [true, false].product([true, false]).each do |not_need_adj, resign_before_year_end|
       action = applier.apply(:multi_companies, answer: true, not_need_adj:, resign_before_year_end:)
-      assert_empty action[:skip]
-      assert_equal questions.between(:salary_more, :salary_more_next), action[:recover]
+      assert_empty action.skip
+      assert_equal questions.between(:salary_more, :salary_more_next), action.recover
     end
 
     # false
     action = applier.apply(:multi_companies, answer: false, not_need_adj: true, resign_before_year_end: true)
-    assert_equal questions.between(:salary_more, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:salary_more, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:multi_companies, answer: false, not_need_adj: true, resign_before_year_end: false)
-    assert_equal questions.between(:salary_more, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:salary_more, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     action = applier.apply(:multi_companies, answer: false, not_need_adj: false, resign_before_year_end: true)
-    assert_equal %w[salary_more], action[:skip]
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+    assert_equal %w[salary_more], action.skip
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.recover
 
     action = applier.apply(:multi_companies, answer: false, not_need_adj: false, resign_before_year_end: false)
-    assert_equal %w[salary_more], action[:skip]
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+    assert_equal %w[salary_more], action.skip
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.recover
 
     # salary_more
     # true
     action = applier.apply(:salary_more, answer: true, not_need_adj: true, resign_before_year_end: true)
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:salary_more, answer: true, not_need_adj: true, resign_before_year_end: false)
-    assert_equal questions.between(:life_insurances, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:life_insurances, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     action = applier.apply(:salary_more, answer: true, not_need_adj: false, resign_before_year_end: true)
-    assert_empty action[:skip]
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+    assert_empty action.skip
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.recover
 
     action = applier.apply(:salary_more, answer: true, not_need_adj: false, resign_before_year_end: false)
-    assert_empty action[:skip]
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:recover]
+    assert_empty action.skip
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.recover
 
     # false
     action = applier.apply(:salary_more, answer: false, not_need_adj: true, resign_before_year_end: true)
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:salary_more, answer: false, not_need_adj: true, resign_before_year_end: false)
-    assert_equal questions.between(:life_insurances, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:life_insurances, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     action = applier.apply(:salary_more, answer: false, not_need_adj: false, resign_before_year_end: true)
-    assert_equal questions.between(:life_insurances, :salary_more_next), action[:skip]
-    assert_empty action[:recover]
+    assert_equal questions.between(:life_insurances, :salary_more_next), action.skip
+    assert_empty action.recover
 
     action = applier.apply(:salary_more, answer: false, not_need_adj: false, resign_before_year_end: false)
-    assert_equal questions.between(:life_insurances, :housing_loan), action[:skip]
-    assert_equal questions.between(:basic_infos_next, :salary_more_next), action[:recover]
+    assert_equal questions.between(:life_insurances, :housing_loan), action.skip
+    assert_equal questions.between(:basic_infos_next, :salary_more_next), action.recover
 
     # tax_schedule_next
     %w[first second].each do |answer|
       action = applier.apply(:tax_schedule_next, answer:)
-      assert_equal questions.between(:multi_companies_next, :salary_more_next), action[:skip]
-      assert_empty action[:recover]
+      assert_equal questions.between(:multi_companies_next, :salary_more_next), action.skip
+      assert_empty action.recover
     end
 
     action = applier.apply(:tax_schedule_next, answer: nil)
-    assert_empty action[:skip]
-    assert_equal questions.between(:multi_companies_next, :salary_more_next), action[:recover]
+    assert_empty action.skip
+    assert_equal questions.between(:multi_companies_next, :salary_more_next), action.recover
 
     # multi_companies_next
     action = applier.apply(:multi_companies_next, answer: true)
-    assert_empty action[:skip]
-    assert_equal %w[salary_more_next], action[:recover]
+    assert_empty action.skip
+    assert_equal %w[salary_more_next], action.recover
 
     action = applier.apply(:multi_companies_next, answer: false)
-    assert_equal %w[salary_more_next], action[:skip]
-    assert_empty action[:recover]
+    assert_equal %w[salary_more_next], action.skip
+    assert_empty action.recover
   end
 end
