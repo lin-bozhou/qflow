@@ -3,6 +3,5 @@
 
 require 'irb'
 require_relative '../lib/qflow'
-require_relative '../lib/qflow/version'
 
 IRB.start(__FILE__)
