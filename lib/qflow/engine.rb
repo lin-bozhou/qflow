@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'errors'
+require_relative 'action'
 require_relative 'transition'
 
 class QFlow::Engine
@@ -14,24 +15,21 @@ class QFlow::Engine
 
   # @param question_code [String, Symbol]
   # @param args [Hash]
-  # @return [Hash]
+  # @return [QFlow::Action]
   def run(question_code, **args)
     raise ArgumentError, 'Error: question code cannot be empty' if question_code.to_s.empty?
 
-    return { skip: [], recover: [] } if @question_rule.nil? || @question_rule.configs.empty?
+    return QFlow::Action.new if @question_rule.nil? || @question_rule.configs.empty?
 
     code = question_code.to_sym
     config = @question_rule.configs[code]
-    return { skip: [], recover: [] } unless config
+    return QFlow::Action.new unless config
 
     next_question = calc_next_question(code, config, args)
     skip_questions = calc_skip_questions(code, next_question)
     recover_questions = calc_recover_questions(next_question, skip_questions, config[:effects], config[:targets])
 
-    {
-      skip: skip_questions,
-      recover: recover_questions
-    }
+    QFlow::Action.new(skip: skip_questions, recover: recover_questions)
   end
 
   def build_effect_mapping!
@@ -78,7 +76,7 @@ class QFlow::Engine
             "Error: invalid question flow: current=#{question_code}, next=#{next_question}"
     end
 
-    codes[(current_idx + 1)...next_idx].map(&:to_s)
+    codes[(current_idx + 1)...next_idx]
   end
 
   # @param next_question [Symbol, nil]
@@ -93,7 +91,7 @@ class QFlow::Engine
       affected_questions = @effect_mapping[effect]
       dep_recover.concat(affected_questions) if affected_questions
     end
-    dep_recover = dep_recover.uniq.map(&:to_s)
+    dep_recover = dep_recover.uniq
 
     all_recover = (range_recover + dep_recover).uniq
     all_recover - skip_questions
@@ -107,10 +105,10 @@ class QFlow::Engine
 
     codes = @question_rule.codes
     next_idx = codes.index(next_question)
-    lastest_idx = targets.map { codes.index(_1) }.compact.max
+    last_idx = targets.map { codes.index(_1) }.compact.max
 
-    return [] if next_idx.nil? || lastest_idx.nil? || next_idx > lastest_idx
+    return [] if next_idx.nil? || last_idx.nil? || next_idx > last_idx
 
-    codes[next_idx...lastest_idx].map(&:to_s)
+    codes[next_idx...last_idx]
   end
 end

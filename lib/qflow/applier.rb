@@ -10,7 +10,7 @@ class QFlow::Applier
 
   # @param question_code [String, Symbol]
   # @param args [Hash]
-  # @return [Hash]
+  # @return [QFlow::Action]
   def apply(question_code, **args)
     @engine.run(question_code, **args)
   end
