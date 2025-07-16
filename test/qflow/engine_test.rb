@@ -4,7 +4,7 @@ require_relative '../test_helper'
 
 class EngineTest < Minitest::Test
   def test_basic_question_transitions
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         args :a1
         targets :q3, :q4
@@ -31,7 +31,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_question_with_dependencies
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :a1, :a2
         effects :flag1
@@ -68,7 +68,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_question_with_effects_and_recovery
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -101,7 +101,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_transitions_without_predefined_answer_values
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         effects :flag1
         args :a1
@@ -124,7 +124,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_transitions_with_complex_dependencies
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5 q6]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5 q6]) do
       question :q1 do
         args :a1, :a2, :a3, :a4
         effects :flag1
@@ -191,7 +191,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_nonexistent_question
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1
         targets :q2
@@ -209,7 +209,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_question_without_transitions
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         effects :flag1
       end
@@ -223,7 +223,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_transition_to_nonexistent_question
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         targets :q3
@@ -241,7 +241,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_missing_required_dependencies
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1, :required_arg
         targets :q2
@@ -260,7 +260,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_missing_multiple_dependencies
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1, :a2, :required_arg1, :required_arg2
         targets :q2
@@ -279,7 +279,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_smart_parameter_handling_no_answer_parameter
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         effects :flag1
         args :a1
@@ -298,7 +298,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_smart_parameter_handling_with_deps_but_no_answer_parameter
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         effects :flag1
         args :a1
@@ -325,7 +325,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_empty_current_question
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1
         targets :q2
@@ -349,7 +349,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_invalid_question_flow_backward_jump
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q2 do
         args :a1
         targets :q1, :q3
@@ -378,7 +378,7 @@ class EngineTest < Minitest::Test
 
   def test_invalid_question_flow_same_question
     error = assert_raises QFlow::DefinitionError do
-      QFlow.define(%w[q1 q2]) do
+      QFlow.define(%i[q1 q2]) do
         question :q1 do
           args :a1
           targets :q1
@@ -393,7 +393,7 @@ class EngineTest < Minitest::Test
 
   def test_invalid_question_flow_nonexistent_target
     error = assert_raises QFlow::DefinitionError do
-      QFlow.define(%w[q1 q2]) do
+      QFlow.define(%i[q1 q2]) do
         question :q1 do
           args :a1
           targets :nonexistent
@@ -407,7 +407,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_transitions_block_misuse_in_wrong_context
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1
         targets :q2
@@ -427,7 +427,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_empty_target
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1
         targets :q2
@@ -446,7 +446,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_skip_and_recover_should_not_overlap
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -476,7 +476,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_multiple_questions_with_complex_flow
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5 q6]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5 q6]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -530,7 +530,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_question_defined_in_initial_list_but_not_in_block
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         args :a1
         targets :q4
@@ -555,7 +555,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_multiple_effects_and_complex_recovery
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :a1
         effects :flag1, :flag2
@@ -585,7 +585,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_multiple_calls_in_real_scenario
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -623,7 +623,7 @@ class EngineTest < Minitest::Test
   end
 
   def test_all_string_parameters_applier
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question 'q1' do
         args 'a1'
         effects 'flag1'

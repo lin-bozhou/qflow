@@ -4,11 +4,7 @@ require_relative '../test_helper'
 
 class RuleTest < Minitest::Test
   def test_define_simple_question
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
-      question :q2 do
-        effects :flag3, :flag4
-      end
-
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         effects :flag1, :flag2
         deps :flag3, :flag4
@@ -24,6 +20,10 @@ class RuleTest < Minitest::Test
           end
         end
       end
+
+      question :q2 do
+        effects :flag3, :flag4
+      end
     end
 
     config = rule.configs[:q1]
@@ -34,14 +34,11 @@ class RuleTest < Minitest::Test
     assert_equal %i[q2 q3 q4], config[:targets]
     refute_nil config[:transitions]
     assert_equal %i[q1 q2 q3 q4], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_question_has_transitions_but_no_predefined_answers
-    rule = QFlow.define(%w[q1 q2 q3]) do
-      question :q2 do
-        effects :flag2
-      end
-
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         effects :flag1
         deps :flag2
@@ -51,6 +48,10 @@ class RuleTest < Minitest::Test
         transitions do
           target a1 ? :q2 : :q3
         end
+      end
+
+      question :q2 do
+        effects :flag2
       end
     end
 
@@ -62,6 +63,7 @@ class RuleTest < Minitest::Test
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions]
     assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_empty_question_block
@@ -78,7 +80,8 @@ class RuleTest < Minitest::Test
     assert_empty config[:args]
     assert_empty config[:targets]
     assert_nil config[:transitions]
-    assert_equal [:q1], rule.codes
+    assert_equal %i[q1], rule.codes
+    assert_equal %i[q1], rule.defined_codes
   end
 
   def test_multiple_questions_with_different_configurations
@@ -158,11 +161,11 @@ class RuleTest < Minitest::Test
     assert_nil config[:transitions]
 
     assert_equal %i[q1 q2 q3 q4 q5], rule.codes
+    assert_equal %i[q1 q2 q3 q4 q5], rule.defined_codes
   end
 
   def test_clear_rules
-    rule = QFlow.define
-    rule.instance_eval do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1
         targets :q2
@@ -173,19 +176,23 @@ class RuleTest < Minitest::Test
     end
 
     refute_empty rule.configs
+
     rule.clear!
+
     assert_empty rule.configs
     assert_empty rule.codes
+    assert_empty rule.defined_codes
   end
 
   def test_empty_rule
     rule = QFlow.define
     assert_empty rule.configs
     assert_empty rule.codes
+    assert_empty rule.defined_codes
   end
 
   def test_mixed_empty_and_normal_questions
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         targets :q2, :q3
@@ -233,6 +240,7 @@ class RuleTest < Minitest::Test
     assert_nil config[:transitions]
 
     assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1 q2 q3], rule.defined_codes
   end
 
   def test_question_has_args_but_missing_transitions
@@ -312,7 +320,7 @@ class RuleTest < Minitest::Test
   end
 
   def test_define_with_initial_question_codes
-    rule = QFlow.define(%w[q1 q2 q3 q4 q5]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4 q5]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -354,6 +362,7 @@ class RuleTest < Minitest::Test
     assert_nil rule.configs[:q5]
 
     assert_equal %i[q1 q2 q3 q4 q5], rule.codes
+    assert_equal %i[q1 q4], rule.defined_codes
   end
 
   def test_define_without_initial_question_codes
@@ -389,10 +398,11 @@ class RuleTest < Minitest::Test
     assert_nil config[:transitions]
 
     assert_equal %i[q1 q2], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_define_with_initial_codes_but_empty_block
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       # empty
     end
 
@@ -401,10 +411,11 @@ class RuleTest < Minitest::Test
     assert_nil rule.configs[:q3]
 
     assert_equal %i[q1 q2 q3], rule.codes
+    assert_empty rule.defined_codes
   end
 
   def test_define_with_mixed_initial_and_defined_questions
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q2 do
         args :a1
         targets :q3
@@ -439,10 +450,11 @@ class RuleTest < Minitest::Test
     assert_nil rule.configs[:q4]
 
     assert_equal %i[q1 q2 q3 q4 q5], rule.codes
+    assert_equal %i[q2 q5], rule.defined_codes
   end
 
   def test_target_not_in_targets_raises_error
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         targets :q2, :q3
@@ -460,11 +472,7 @@ class RuleTest < Minitest::Test
   end
 
   def test_params_and_targets_functions
-    rule = QFlow.define(%w[q1 q2 q3 q4]) do
-      question :q2 do
-        effects :flag2
-      end
-
+    rule = QFlow.define(%i[q1 q2 q3 q4]) do
       question :q1 do
         args :a1, :a2
         targets :q2, :q3, :q4
@@ -474,6 +482,10 @@ class RuleTest < Minitest::Test
           target a1 > a2 ? :q2 : :q3
         end
       end
+
+      question :q2 do
+        effects :flag2
+      end
     end
 
     config = rule.configs[:q1]
@@ -482,10 +494,14 @@ class RuleTest < Minitest::Test
     assert_equal [:flag2], config[:deps]
     assert_equal %i[a1 a2], config[:args]
     assert_equal %i[q2 q3 q4], config[:targets]
+    refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2 q3 q4], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_params_with_transitions_should_succeed
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         targets :q2, :q3
@@ -502,10 +518,13 @@ class RuleTest < Minitest::Test
     assert_equal [:a1], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1], rule.defined_codes
   end
 
   def test_targets_with_transitions_should_succeed
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         targets :q2, :q3
@@ -522,6 +541,9 @@ class RuleTest < Minitest::Test
     assert_equal [:a1], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1], rule.defined_codes
   end
 
   def test_question_without_block
@@ -535,7 +557,7 @@ class RuleTest < Minitest::Test
 
   def test_targets_not_in_question_codes_should_fail
     error = assert_raises QFlow::DefinitionError do
-      QFlow.define(%w[q1 q2]) do
+      QFlow.define(%i[q1 q2]) do
         question :q1 do
           args :a1
           targets :q2, :q3 # q3 not in question codes
@@ -549,7 +571,7 @@ class RuleTest < Minitest::Test
   end
 
   def test_targets_all_in_question_codes_should_succeed
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         targets :q2, :q3 # both in question codes
@@ -566,11 +588,14 @@ class RuleTest < Minitest::Test
     assert_equal [:a1], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1], rule.defined_codes
   end
 
   def test_deps_and_effects_overlap_should_fail
     error = assert_raises QFlow::DefinitionError do
-      QFlow.define(%w[q1 q2]) do
+      QFlow.define(%i[q1 q2]) do
         question :q1 do
           args :a1
           effects :flag1, :flag2
@@ -586,11 +611,7 @@ class RuleTest < Minitest::Test
   end
 
   def test_deps_and_effects_no_overlap_should_succeed
-    rule = QFlow.define(%w[q1 q2]) do
-      question :q2 do
-        effects :flag3, :flag4
-      end
-
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1
         effects :flag1, :flag2
@@ -599,6 +620,10 @@ class RuleTest < Minitest::Test
         transitions do
           target :q2
         end
+      end
+
+      question :q2 do
+        effects :flag3, :flag4
       end
     end
 
@@ -609,11 +634,14 @@ class RuleTest < Minitest::Test
     assert_equal %i[a1], config[:args]
     assert_equal %i[q2], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_deps_not_defined_in_effects_should_fail
     error = assert_raises QFlow::DefinitionError do
-      QFlow.define(%w[q1 q2]) do
+      QFlow.define(%i[q1 q2]) do
         question :q1 do
           args :a1
           effects :flag1
@@ -629,11 +657,7 @@ class RuleTest < Minitest::Test
   end
 
   def test_deps_all_defined_in_effects_should_succeed
-    rule = QFlow.define(%w[q1 q2 q3]) do
-      question :q2 do
-        effects :flag2, :flag3
-      end
-
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -642,6 +666,10 @@ class RuleTest < Minitest::Test
         transitions do
           target :q2
         end
+      end
+
+      question :q2 do
+        effects :flag2, :flag3
       end
     end
 
@@ -652,10 +680,13 @@ class RuleTest < Minitest::Test
     assert_equal %i[a1], config[:args]
     assert_equal %i[q2], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_multiple_calls_should_merge_without_duplicates
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1, :a2
         args :a2, :a3 # a2 is duplicate, should be ignored
@@ -695,10 +726,13 @@ class RuleTest < Minitest::Test
     assert_empty config[:args]
     assert_empty config[:targets]
     assert_nil config[:transitions]
+
+    assert_equal %i[q1 q2], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_incremental_building_with_multiple_calls
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question :q1 do
         args :a1
         effects :flag1
@@ -727,10 +761,13 @@ class RuleTest < Minitest::Test
     assert_equal %i[a1 a2], config[:args]
     assert_equal %i[q2 q3], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1], rule.defined_codes
   end
 
   def test_empty_calls_should_not_affect_existing_values
-    rule = QFlow.define(%w[q1 q2]) do
+    rule = QFlow.define(%i[q1 q2]) do
       question :q1 do
         args :a1, :a2
         effects :flag1, :flag2
@@ -755,10 +792,13 @@ class RuleTest < Minitest::Test
     assert_equal %i[a1 a2], config[:args]
     assert_equal %i[q2], config[:targets]
     refute_nil config[:transitions]
+
+    assert_equal %i[q1 q2], rule.codes
+    assert_equal %i[q1], rule.defined_codes
   end
 
   def test_all_string_parameters
-    rule = QFlow.define(%w[q1 q2 q3]) do
+    rule = QFlow.define(%i[q1 q2 q3]) do
       question 'q1' do
         args 'a1', 'a2'
         effects 'flag1', 'flag2'
@@ -791,6 +831,7 @@ class RuleTest < Minitest::Test
     assert_nil config[:transitions]
 
     assert_equal %i[q1 q2 q3], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 
   def test_mixed_string_and_symbol_parameters
@@ -827,5 +868,6 @@ class RuleTest < Minitest::Test
     assert_nil config[:transitions]
 
     assert_equal %i[q1 q2 q3 q4], rule.codes
+    assert_equal %i[q1 q2], rule.defined_codes
   end
 end
