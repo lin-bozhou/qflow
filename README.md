@@ -31,7 +31,7 @@ bundle install
 require 'qflow'
 
 # Define a questionnaire flow
-rule = QFlow.define(%w[q1 q2 q3 q4]) do
+rule = QFlow.define(%i[q1 q2 q3 q4]) do
   question :q1 do
     args :answer
     effects :flag1 # When answered, affects questions that depend on flag1
