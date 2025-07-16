@@ -8,6 +8,7 @@ class QFlow::Rule
   def initialize(initial_questions = [], &)
     @rules = {}
     @question_codes = self.class.normalize_symbols(initial_questions)
+    @defined_question_codes = []
 
     instance_eval(&) if block_given?
     validate_targets!
@@ -19,14 +20,20 @@ class QFlow::Rule
     @rules
   end
 
-  # @return [Array<String>]
+  # @return [Array<Symbol>]
   def codes
     @question_codes
+  end
+
+  # @return [Array<Symbol>]
+  def defined_codes
+    @defined_question_codes
   end
 
   def clear!
     @rules = {}
     @question_codes = []
+    @defined_question_codes = []
   end
 
   # @param question_code [String, Symbol]
@@ -38,6 +45,7 @@ class QFlow::Rule
     code = question_code.to_sym
     @rules[code] = Builder.new(code, &).build
     @question_codes << code unless @question_codes.include?(code)
+    @defined_question_codes << code unless @defined_question_codes.include?(code)
   end
 
   # @param values [Array<String, Symbol, nil>]

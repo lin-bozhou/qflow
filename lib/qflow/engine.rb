@@ -64,7 +64,7 @@ class QFlow::Engine
 
   # @param question_code [Symbol]
   # @param next_question [Symbol, nil]
-  # @return [Array<String>]
+  # @return [Array<Symbol>]
   def calc_skip_questions(question_code, next_question)
     return [] unless next_question
 
@@ -80,10 +80,10 @@ class QFlow::Engine
   end
 
   # @param next_question [Symbol, nil]
-  # @param skip_questions [Array<String>]
+  # @param skip_questions [Array<Symbol>]
   # @param effects [Array<Symbol>]
   # @param targets [Array<Symbol>]
-  # @return [Array<String>]
+  # @return [Array<Symbol>]
   def calc_recover_questions(next_question, skip_questions, effects, targets)
     range_recover = calc_range_recover(next_question, targets)
     dep_recover = []
@@ -99,7 +99,7 @@ class QFlow::Engine
 
   # @param next_question [Symbol, nil]
   # @param targets [Array<Symbol>]
-  # @return [Array<String>]
+  # @return [Array<Symbol>]
   def calc_range_recover(next_question, targets)
     return [] if next_question.nil? || targets.empty?
 
